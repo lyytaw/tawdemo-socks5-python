@@ -29,7 +29,7 @@ class Server:
             self.loop.close()
 
     async def start_listening(self):
-        await asyncio.start_server(self.auth_receiver, 'localhost', self.port)
+        await asyncio.start_server(self.auth_receiver, '0.0.0.0', self.port)
 
     async def auth_receiver(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         data = await common.read_data(reader, True)
@@ -65,7 +65,7 @@ class Server:
         if data[3] == 0x01:
             remote_host = data[4: 8].join('.')
         elif data[3] == 0x03:
-            remote_host = str(data[5: -2])
+            remote_host = str(data[5: -2], encoding='utf-8')
         elif data[3] == 0x04:
             self.shake_hand_reply_fail(writer, 0x08)
         else:
