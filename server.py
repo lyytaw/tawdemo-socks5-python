@@ -20,7 +20,7 @@ class Server:
     def parse_args(self, args):
         arg_parser = argparse.ArgumentParser()
         arg_parser.add_argument('-p', '--port', dest='port', required=True, help='listening port')
-        arg_parser.add_argument('-P', '--password', dest='password', required=True, help='password')
+        arg_parser.add_argument('-P', '--password', type=int, dest='password', required=True, help='password')
         return arg_parser.parse_args(args)
 
     def server_loop(self):
