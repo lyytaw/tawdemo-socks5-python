@@ -75,7 +75,11 @@ class Server:
         remote_port = int.from_bytes(bytes=data[-2:], byteorder='big')
         print("remote host: %s:%s" % (remote_host, remote_port))
 
-        remote_reader, remote_writer = await asyncio.open_connection(remote_host, remote_port, loop=self.loop)
+        try:
+            remote_reader, remote_writer = await asyncio.open_connection(remote_host, remote_port, loop=self.loop)
+        except:
+            self.shake_hand_reply_fail(writer, 0x04)
+            return
         self.shake_hand_reply_success(writer)
         asyncio.run_coroutine_threadsafe(common.transfer_data_with_decompress(reader, remote_writer), self.loop)
         asyncio.run_coroutine_threadsafe(common.transfer_data_with_compress(remote_reader, writer), self.loop)
