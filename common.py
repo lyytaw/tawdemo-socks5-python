@@ -44,6 +44,8 @@ async def transfer_data_with_compress(reader: asyncio.StreamReader, writer: asyn
         data = await read_data(reader, False)
         if not data:
             break
+        print('read data:')
+        print(data)
         write_data(writer, data, True)
     writer.close()
 
@@ -53,6 +55,8 @@ async def transfer_data_with_decompress(reader: asyncio.StreamReader, writer: as
         data = await read_data(reader, True)
         if not data:
             break
+        print('write data:')
+        print(data)
         write_data(writer, data, False)
     writer.close()
 
