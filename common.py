@@ -13,8 +13,11 @@ async def read_exact_bytes(reader: asyncio.StreamReader, n: int):
     result = b''
     while sum_len < n:
         data = await reader.read(n - sum_len)
-        if not data:
+        if not data and sum_len == 0:
             return data
+        elif not data:
+            await asyncio.sleep(0.01)
+            continue
         result += data
         sum_len += len(data)
     return result
