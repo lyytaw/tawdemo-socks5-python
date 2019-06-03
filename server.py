@@ -14,11 +14,13 @@ class Server:
     def __init__(self, args):
         options = self.parse_args(args)
         self.port = options.port
+        self.password = options.password
         self.loop = asyncio.get_event_loop()
 
     def parse_args(self, args):
         arg_parser = argparse.ArgumentParser()
         arg_parser.add_argument('-p', '--port', dest='port', required=True, help='listening port')
+        arg_parser.add_argument('-P', '--password', dest='password', required=True, help='password')
         return arg_parser.parse_args(args)
 
     def server_loop(self):
@@ -32,7 +34,7 @@ class Server:
         await asyncio.start_server(self.auth_receiver, '0.0.0.0', self.port)
 
     async def auth_receiver(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        data = await common.read_data(reader, True)
+        data = await common.read_data(reader, True, self.password)
         if len(data) < 2 or len(data) != 2 + data[1] or data[0] != 0x05:
             self.auth_reply(writer, False)
             return
@@ -47,10 +49,10 @@ class Server:
 
     def auth_reply(self, writer: asyncio.StreamWriter, success: bool):
         data = bytes([0x05, 0x00]) if success else bytes([0x05, 0xFF])
-        common.write_data(writer, data, True)
+        common.write_data(writer, data, True, self.password)
 
     async def shake_hand_receiver(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        data = await common.read_data(reader, True)
+        data = await common.read_data(reader, True, self.password)
         if data[0] != 0x05:
             self.shake_hand_reply_fail(writer, 0x02)
             return
@@ -82,16 +84,18 @@ class Server:
             self.shake_hand_reply_fail(writer, 0x04)
             return
         self.shake_hand_reply_success(writer)
-        asyncio.run_coroutine_threadsafe(common.transfer_data_with_decompress(reader, remote_writer), self.loop)
-        asyncio.run_coroutine_threadsafe(common.transfer_data_with_compress(remote_reader, writer), self.loop)
+        asyncio.run_coroutine_threadsafe(
+            common.transfer_data_with_decompress(reader, remote_writer, self.password), self.loop)
+        asyncio.run_coroutine_threadsafe(
+            common.transfer_data_with_compress(remote_reader, writer, self.password), self.loop)
 
     def shake_hand_reply_success(self, writer):
         data = bytes([0x05, 0x00, 0x00, 0x01, 127, 0, 0, 1, 80, 0])
-        common.write_data(writer, data, True)
+        common.write_data(writer, data, True, self.password)
 
     def shake_hand_reply_fail(self, writer, error_code):
         data = bytes([0x05, error_code, 0x00, 0x01, 127, 0, 0, 1, 80, 0])
-        common.write_data(writer, data, True)
+        common.write_data(writer, data, True, self.password)
 
     def start(self):
         self.server_loop()
