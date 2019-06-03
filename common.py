@@ -21,13 +21,19 @@ async def read_data(reader: asyncio.StreamReader, decompress: bool):
         data = await reader.read(nxt)
         data = zlib.decompress(data)
         data = xor_bytes(data, rand)
+        print('read data:')
+        print(data)
         return data
     else:
         data = await reader.read(BUFF_SIZE)
+        print('read data:')
+        print(data)
         return data
 
 
 def write_data(writer: asyncio.StreamWriter, data: bytes, compress: bool):
+    print('write data:')
+    print(data)
     if compress:
         rand = random.randint(0, 100)
         data = xor_bytes(data, rand)
@@ -43,9 +49,8 @@ async def transfer_data_with_compress(reader: asyncio.StreamReader, writer: asyn
     while True:
         data = await read_data(reader, False)
         if not data:
+            writer.close()
             break
-        print('read data:')
-        print(data)
         write_data(writer, data, True)
     writer.close()
 
@@ -54,9 +59,8 @@ async def transfer_data_with_decompress(reader: asyncio.StreamReader, writer: as
     while True:
         data = await read_data(reader, True)
         if not data:
+            writer.close()
             break
-        print('write data:')
-        print(data)
         write_data(writer, data, False)
     writer.close()
 
