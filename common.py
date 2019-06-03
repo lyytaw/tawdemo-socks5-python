@@ -10,14 +10,9 @@ from constant import *
 
 async def read_data(reader: asyncio.StreamReader, decompress: bool):
     if decompress:
-        data = await reader.read(1)
-        if not data:
-            return data
-        rand = int.from_bytes(bytes=data, byteorder='big', signed=True)
-        data = await reader.read(2)
-        if not data:
-            return data
-        nxt = int.from_bytes(bytes=data, byteorder='big', signed=True)
+        data = await reader.read(3)
+        rand = int.from_bytes(bytes=data[0:1], byteorder='big', signed=True)
+        nxt = int.from_bytes(bytes=data[1:], byteorder='big', signed=True)
         data = await reader.read(nxt)
         data = zlib.decompress(data)
         data = xor_bytes(data, rand)
@@ -38,9 +33,8 @@ def write_data(writer: asyncio.StreamWriter, data: bytes, compress: bool):
         rand = random.randint(0, 100)
         data = xor_bytes(data, rand)
         data = zlib.compress(data)
-        writer.write(rand.to_bytes(length=1, byteorder='big', signed=True))
-        writer.write(len(data).to_bytes(length=2, byteorder='big', signed=True))
-        writer.write(data)
+        writer.write(rand.to_bytes(length=1, byteorder='big', signed=True)
+                     + len(data).to_bytes(length=2, byteorder='big', signed=True) + data)
     else:
         writer.write(data)
 
