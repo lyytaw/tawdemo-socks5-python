@@ -9,7 +9,6 @@ from constant import *
 
 
 async def read_data(reader: asyncio.StreamReader, decompress: bool):
-    decompress = False
     if decompress:
         data = await reader.read(1)
         if not data:
@@ -33,7 +32,6 @@ async def read_data(reader: asyncio.StreamReader, decompress: bool):
 
 
 def write_data(writer: asyncio.StreamWriter, data: bytes, compress: bool):
-    compress = False
     print('write data:')
     print(data)
     if compress:
