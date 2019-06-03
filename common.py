@@ -8,12 +8,26 @@ import asyncio
 from constant import *
 
 
+async def read_exact_bytes(reader: asyncio.StreamReader, n: int):
+    sum_len = 0
+    result = b''
+    while sum_len < n:
+        data = await reader.read(n - sum_len)
+        if not data:
+            return data
+        result += data
+        sum_len += len(data)
+    return result
+
+
 async def read_data(reader: asyncio.StreamReader, decompress: bool):
     if decompress:
-        data = await reader.read(3)
+        data = await read_exact_bytes(reader, 3)
+        if not data:
+            return data
         rand = int.from_bytes(bytes=data[0:1], byteorder='big', signed=True)
         nxt = int.from_bytes(bytes=data[1:], byteorder='big', signed=True)
-        data = await reader.read(nxt)
+        data = await read_exact_bytes(reader, nxt)
         data = zlib.decompress(data)
         data = xor_bytes(data, rand)
         return data
