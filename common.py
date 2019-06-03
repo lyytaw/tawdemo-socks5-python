@@ -2,6 +2,7 @@
 # @Time    : 2019-06-01
 # @Author  : cayun
 
+import sys
 import random
 import zlib
 import asyncio
@@ -16,6 +17,7 @@ async def read_exact_bytes(reader: asyncio.StreamReader, n: int):
         if not data and sum_len == 0:
             return data
         elif not data:
+            print('lalalala', file=sys.stderr)
             await asyncio.sleep(0.01)
             continue
         result += data
