@@ -16,19 +16,13 @@ async def read_data(reader: asyncio.StreamReader, decompress: bool):
         data = await reader.read(nxt)
         data = zlib.decompress(data)
         data = xor_bytes(data, rand)
-        print('read data:')
-        print(data)
         return data
     else:
         data = await reader.read(BUFF_SIZE)
-        print('read data:')
-        print(data)
         return data
 
 
 def write_data(writer: asyncio.StreamWriter, data: bytes, compress: bool):
-    print('write data:')
-    print(data)
     if compress:
         rand = random.randint(0, 100)
         data = xor_bytes(data, rand)
