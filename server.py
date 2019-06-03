@@ -63,7 +63,7 @@ class Server:
 
         remote_host = ''
         if data[3] == 0x01:
-            remote_host = data[4: 8].join('.')
+            remote_host = '%d.%d.%d.%d' % (int(data[4]), int(data[5]), int(data[6]), int(data[7]))
         elif data[3] == 0x03:
             remote_host = str(data[5: -2], encoding='utf-8')
         elif data[3] == 0x04:
