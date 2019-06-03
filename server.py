@@ -78,6 +78,7 @@ class Server:
         try:
             remote_reader, remote_writer = await asyncio.open_connection(remote_host, remote_port, loop=self.loop)
         except:
+            print('connect fail to %s' % remote_host, file=sys.stderr)
             self.shake_hand_reply_fail(writer, 0x04)
             return
         self.shake_hand_reply_success(writer)
