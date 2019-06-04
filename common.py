@@ -27,21 +27,29 @@ def write_data(writer: asyncio.StreamWriter, data: bytes, encrypt: bool, passwor
 
 
 async def transfer_data_with_encrypt(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, password: int):
-    while True:
-        data = await read_data(reader, False, password)
-        if not data:
-            writer.close()
-            break
-        write_data(writer, data, True, password)
+    try:
+        while True:
+            data = await read_data(reader, False, password)
+            if not data:
+                break
+            write_data(writer, data, True, password)
+    except:
+        pass
+    finally:
+        writer.close()
 
 
 async def transfer_data_with_decrypt(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, password: int):
-    while True:
-        data = await read_data(reader, True, password)
-        if not data:
-            writer.close()
-            break
-        write_data(writer, data, False, password)
+    try:
+        while True:
+            data = await read_data(reader, True, password)
+            if not data:
+                break
+            write_data(writer, data, False, password)
+    except:
+        pass
+    finally:
+        writer.close()
 
 
 def encrypt_bytes(data: bytes, password: int):
