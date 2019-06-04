@@ -17,14 +17,14 @@ class TcpRelayHandler(object):
         self.loop = loop
 
     def start_client(self):
-        asyncio.run_coroutine_threadsafe(self._listening(self.config.local_port, self._transfer_data), self.loop)
+        self.loop.run_until_complete(self._listening(self.config.local_port, self._transfer_data))
         try:
             self.loop.run_forever()
         finally:
             self.loop.close()
 
     def start_server(self):
-        asyncio.run_coroutine_threadsafe(self._listening(self.config.port, self._shake_hand), self.loop)
+        self.loop.run_until_complete(self._listening(self.config.port, self._shake_hand))
         try:
             self.loop.run_forever()
         finally:
@@ -36,10 +36,11 @@ class TcpRelayHandler(object):
     async def _transfer_data(self, reader, writer):
         remote_reader, remote_writer = \
             await asyncio.open_connection(self.config.remote_host, self.config.remote_port, loop=self.loop)
-        asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_encrypt(reader, remote_writer, self.config.password), self.loop)
-        asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_decrypt(remote_reader, writer, self.config.password), self.loop)
+        await asyncio.gather(
+            common.transfer_data_with_encrypt(reader, remote_writer, self.config.password),
+            common.transfer_data_with_decrypt(remote_reader, writer, self.config.password),
+            loop=self.loop
+        )
 
     async def _shake_hand(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         data = await common.read_data(reader, True, self.config.password)
@@ -70,11 +71,8 @@ class TcpRelayHandler(object):
             writer.close()
             return
 
-        if data[1] == 0x01:     # TCP
-            self._establish_connection_success(writer)
-        elif data[1] == 0x03:   # UDP
-            self._establish_connection_success(writer)
-        else:
+        # 只支持TCP和UDP
+        if data[1] != 0x01 and data[1] != 0x03:
             self._establish_connection_fail(writer, 0x07)
             writer.close()
             return
@@ -103,17 +101,17 @@ class TcpRelayHandler(object):
             writer.close()
             return
         self._establish_connection_success(writer)
-        asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_decrypt(reader, remote_writer, self.config.password), self.loop)
-        asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_encrypt(remote_reader, writer, self.config.password), self.loop)
+        await asyncio.gather(
+            common.transfer_data_with_decrypt(reader, remote_writer, self.config.password),
+            common.transfer_data_with_encrypt(remote_reader, writer, self.config.password),
+            loop=self.loop
+        )
 
     def _establish_connection_success(self, writer):
-        # data = bytes([0x05, 0x00, 0x00, 0x03])
-        # host = bytes(self.config.host, encoding='utf-8')
-        # data += len(host).to_bytes(length=1, byteorder='big') + host
-        # data += common.convert_port_to_bytes(self.config.port)
-        data = bytes([0x05, 0x00, 0x00, 0x01, 127, 0, 0, 1, 80, 0])
+        data = bytes([0x05, 0x00, 0x00, 0x03])
+        host = bytes(self.config.host, encoding='utf-8')
+        data += len(host).to_bytes(length=1, byteorder='big') + host
+        data += common.convert_port_to_bytes(self.config.port)
         common.write_data(writer, data, True, self.config.password)
 
     def _establish_connection_fail(self, writer, error_code):
