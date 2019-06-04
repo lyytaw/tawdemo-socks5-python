@@ -17,14 +17,14 @@ class TcpRelayHandler(object):
         self.loop = loop
 
     def start_client(self):
-        asyncio.run_coroutine_threadsafe(self._listening(self.config.local_port, None), self.loop)
+        asyncio.run_coroutine_threadsafe(self._listening(self.config.local_port, self._transfer_data), self.loop)
         try:
             self.loop.run_forever()
         finally:
             self.loop.close()
 
     def start_server(self):
-        asyncio.run_coroutine_threadsafe(self._listening(self.config.port, None), self.loop)
+        asyncio.run_coroutine_threadsafe(self._listening(self.config.port, self._shake_hand), self.loop)
         try:
             self.loop.run_forever()
         finally:
