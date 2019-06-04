@@ -12,7 +12,7 @@ from tcp_relay import TcpRelayHandler
 def _parse_args(args):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('-p', '--port', dest='port', type=int, required=True, help='listening port')
-    arg_parser.add_argument('-h', '--host', dest='host', required=True, help='local host/ip')
+    arg_parser.add_argument('-H', '--host', dest='host', required=True, help='local host/ip')
     arg_parser.add_argument('-P', '--password', type=int, dest='password', required=True, help='password')
     return arg_parser.parse_args(args)
 
