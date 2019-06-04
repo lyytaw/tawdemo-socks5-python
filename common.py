@@ -7,23 +7,18 @@ from constant import *
 
 
 async def read_data(reader: asyncio.StreamReader, decrypt: bool, password: int):
-    print('read data:')
     if decrypt:
         data = await reader.read(BUFF_SIZE)
         if not data:
             return data
         data = decrypt_bytes(data, password)
-        print(data)
         return data
     else:
         data = await reader.read(BUFF_SIZE)
-        print(data)
         return data
 
 
 def write_data(writer: asyncio.StreamWriter, data: bytes, encrypt: bool, password: int):
-    print('write data:')
-    print(data)
     if encrypt:
         data = encrypt_bytes(data, password)
         writer.write(data)
