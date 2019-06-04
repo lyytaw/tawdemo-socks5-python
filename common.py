@@ -6,8 +6,8 @@ import asyncio
 from constant import *
 
 
-async def read_data(reader: asyncio.StreamReader, decompress: bool, password: int):
-    if decompress:
+async def read_data(reader: asyncio.StreamReader, decrypt: bool, password: int):
+    if decrypt:
         data = await reader.read(BUFF_SIZE)
         if not data:
             return data
@@ -18,8 +18,8 @@ async def read_data(reader: asyncio.StreamReader, decompress: bool, password: in
         return data
 
 
-def write_data(writer: asyncio.StreamWriter, data: bytes, compress: bool, password: int):
-    if compress:
+def write_data(writer: asyncio.StreamWriter, data: bytes, encrypt: bool, password: int):
+    if encrypt:
         data = encrypt_bytes(data, password)
         writer.write(data)
     else:
@@ -46,16 +46,23 @@ async def transfer_data_with_decompress(reader: asyncio.StreamReader, writer: as
     writer.close()
 
 
-def encrypt_bytes(bstr: bytes, password: int):
-    barr = bytearray(bstr)
-    for i in range(len(barr)):
-        barr[i] = ((barr[i] ^ password) + password) & 255
-    return bytes(barr)
+def encrypt_bytes(data: bytes, password: int):
+    data = bytearray(data)
+    for i in range(len(data)):
+        data[i] = ((data[i] ^ password) + password) & 255
+    return bytes(data)
 
 
-def decrypt_bytes(bstr: bytes, password: int):
-    barr = bytearray(bstr)
-    for i in range(len(barr)):
-        barr[i] = ((barr[i] - password) ^ password) & 255
-    return bytes(barr)
+def decrypt_bytes(data: bytes, password: int):
+    data = bytearray(data)
+    for i in range(len(data)):
+        data[i] = ((data[i] - password) ^ password) & 255
+    return bytes(data)
 
+
+def get_port_from_bytes(data: bytes):
+    return int.from_bytes(bytes=data, byteorder='big')
+
+
+def convert_port_to_bytes(port: int):
+    return port.to_bytes(length=2, byteorder='big')
