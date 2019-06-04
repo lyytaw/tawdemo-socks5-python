@@ -30,7 +30,6 @@ async def transfer_data_with_encrypt(reader: asyncio.StreamReader, writer: async
     while True:
         data = await read_data(reader, False, password)
         if not data:
-            writer.close()
             break
         write_data(writer, data, True, password)
     writer.close()
@@ -40,7 +39,6 @@ async def transfer_data_with_decrypt(reader: asyncio.StreamReader, writer: async
     while True:
         data = await read_data(reader, True, password)
         if not data:
-            writer.close()
             break
         write_data(writer, data, False, password)
     writer.close()

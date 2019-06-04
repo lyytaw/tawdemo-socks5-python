@@ -46,13 +46,11 @@ class TcpRelayHandler(object):
         data = await common.read_data(reader, True, self.config.password)
         if len(data) < 2 or len(data) != 2 + data[1] or data[0] != 0x05:
             self._shake_hand_fail(writer)
-            writer.close()
             return
 
         # 判断客户端是否接受"无需认证"的方式
         if 0x00 not in data[2:]:
             self._shake_hand_fail(writer)
-            writer.close()
             return
 
         self._shake_hand_success(writer)
@@ -68,13 +66,11 @@ class TcpRelayHandler(object):
         data = await common.read_data(reader, True, self.config.password)
         if data[0] != 0x05 or data[2] != 0x00:
             self._establish_connection_fail(writer, 0x02)
-            writer.close()
             return
 
         # 只支持TCP和UDP
         if data[1] != 0x01 and data[1] != 0x03:
             self._establish_connection_fail(writer, 0x07)
-            writer.close()
             return
 
         if data[3] == 0x01:     # IPv4
@@ -83,11 +79,9 @@ class TcpRelayHandler(object):
             remote_host = str(data[5: -2], encoding='utf-8')
         elif data[3] == 0x04:   # IPv6
             self._establish_connection_fail(writer, 0x08)
-            writer.close()
             return
         else:
             self._establish_connection_fail(writer, 0x02)
-            writer.close()
             return
 
         remote_port = int.from_bytes(bytes=data[-2:], byteorder='big')
@@ -98,7 +92,6 @@ class TcpRelayHandler(object):
         except:
             print('connect fail to %s' % remote_host, file=sys.stderr)
             self._establish_connection_fail(writer, 0x04)
-            writer.close()
             return
         self._establish_connection_success(writer)
         await asyncio.gather(
