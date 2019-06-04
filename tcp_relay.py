@@ -37,9 +37,9 @@ class TcpRelayHandler(object):
         remote_reader, remote_writer = \
             await asyncio.open_connection(self.config.remote_host, self.config.remote_port, loop=self.loop)
         asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_compress(reader, remote_writer, self.config.password), self.loop)
+            common.transfer_data_with_encrypt(reader, remote_writer, self.config.password), self.loop)
         asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_decompress(remote_reader, writer, self.config.password), self.loop)
+            common.transfer_data_with_decrypt(remote_reader, writer, self.config.password), self.loop)
 
     async def _shake_hand(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         data = await common.read_data(reader, True, self.config.password)
@@ -104,9 +104,9 @@ class TcpRelayHandler(object):
             return
         self._establish_connection_success(writer)
         asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_decompress(reader, remote_writer, self.config.password), self.loop)
+            common.transfer_data_with_decrypt(reader, remote_writer, self.config.password), self.loop)
         asyncio.run_coroutine_threadsafe(
-            common.transfer_data_with_compress(remote_reader, writer, self.config.password), self.loop)
+            common.transfer_data_with_encrypt(remote_reader, writer, self.config.password), self.loop)
 
     def _establish_connection_success(self, writer):
         data = bytes([0x05, 0x00, 0x00, 0x03])
