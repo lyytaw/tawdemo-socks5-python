@@ -109,10 +109,11 @@ class TcpRelayHandler(object):
             common.transfer_data_with_encrypt(remote_reader, writer, self.config.password), self.loop)
 
     def _establish_connection_success(self, writer):
-        data = bytes([0x05, 0x00, 0x00, 0x03])
-        host = bytes(self.config.host, encoding='utf-8')
-        data += len(host).to_bytes(length=1, byteorder='big') + host
-        data += common.convert_port_to_bytes(self.config.port)
+        # data = bytes([0x05, 0x00, 0x00, 0x03])
+        # host = bytes(self.config.host, encoding='utf-8')
+        # data += len(host).to_bytes(length=1, byteorder='big') + host
+        # data += common.convert_port_to_bytes(self.config.port)
+        data = bytes([0x05, 0x00, 0x00, 0x01, 127, 0, 0, 1, 80, 0])
         common.write_data(writer, data, True, self.config.password)
 
     def _establish_connection_fail(self, writer, error_code):
