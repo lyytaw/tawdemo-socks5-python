@@ -26,6 +26,10 @@ nohup python server.py -p [本地监听端口] -P [密码] &
 nohup python client.py -lp [本地监听端口] -rp [服务器端口] -rh [服务器地址] -P [密码] &
 ```
 
+### 版本特性
+
+v1.0 仅支持TCP协议的代理
+
 ### 协议
 
 本项目使用[MIT协议](https://github.com/thingerpig/tepig-bridge-python/blob/master/LICENSE)
