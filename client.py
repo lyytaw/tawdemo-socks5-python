@@ -11,9 +11,10 @@ from tcp_relay import TcpRelayHandler
 
 def _parse_args(args):
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('-lp', '--local-port', dest='local_port', required=True, help='local listening port')
+    arg_parser.add_argument('-lp', '--local-port', dest='local_port', type=int,
+                            required=True, help='local listening port')
     arg_parser.add_argument('-rh', '--remote-host', dest='remote_host', required=True, help='remote host')
-    arg_parser.add_argument('-rp', '--remote-port', dest='remote_port', required=True, help='remote port')
+    arg_parser.add_argument('-rp', '--remote-port', dest='remote_port', type=int, required=True, help='remote port')
     arg_parser.add_argument('-P', '--password', type=int, dest='password', required=True, help='password')
     return arg_parser.parse_args(args)
 
