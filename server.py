@@ -7,6 +7,7 @@ import argparse
 import asyncio
 
 from tcp_relay import TcpRelayHandler
+from udp_relay import UdpRelayHandler
 
 
 def _parse_args(args):
@@ -20,8 +21,14 @@ def main():
     config = _parse_args(sys.argv[1:])
     loop = asyncio.get_event_loop()
     tcp_relay_handler = TcpRelayHandler(False, config, loop)
+    udp_relay_handler = UdpRelayHandler(False, config, loop)
 
-    loop.run_until_complete(tcp_relay_handler.start())
+    tasks = [
+        asyncio.ensure_future(tcp_relay_handler.start()),
+        asyncio.ensure_future(udp_relay_handler.start())
+    ]
+
+    loop.run_until_complete(asyncio.wait(tasks))
     try:
         loop.run_forever()
     finally:

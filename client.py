@@ -24,11 +24,11 @@ def main():
     config = _parse_args(sys.argv[1:])
     loop = asyncio.get_event_loop()
     tcp_relay_handler = TcpRelayHandler(True, config, loop)
-    # udp_relay_handler = UdpRelayHandler(config, loop)
+    udp_relay_handler = UdpRelayHandler(True, config, loop)
 
     tasks = [
         asyncio.ensure_future(tcp_relay_handler.start()),
-        # asyncio.ensure_future(udp_relay_handler.start_client())
+        asyncio.ensure_future(udp_relay_handler.start())
     ]
 
     loop.run_until_complete(asyncio.wait(tasks))

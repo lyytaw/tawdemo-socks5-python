@@ -5,49 +5,105 @@
 # @Author  : hongshu
 
 import asyncio
-from asyncio import transports
-from typing import Optional, Union, Text, Tuple
+import common
 
 
 class UdpRelayHandler(object):
 
-    def __init__(self, config, loop):
+    def __init__(self, is_client, config, loop):
+        self.is_client = is_client
         self.config = config
         self.loop = loop
 
-    def start_client(self):
-        self.loop.run_until_complete(self._start_up(self.config.local_port))
-        try:
-            self.loop.run_forever()
-        finally:
-            self.loop.close()
+    async def start(self):
+        await self._listening()
 
-    def start_server(self):
-        self.loop.run_until_complete(self._start_up(self.config.port))
-        try:
-            self.loop.run_forever()
-        finally:
-            self.loop.close()
-
-    async def _start_up(self, port: int):
-        transport, protocol = await self.loop.create_datagram_endpoint(
-            lambda: UdpRelayProtocol(),
-            remote_addr=('0.0.0.0', port)
-        )
+    async def _listening(self):
+        if self.is_client:
+            transport, protocol = await self.loop.create_datagram_endpoint(
+                lambda: UdpRelayReceiverProtocol(True, self.config, self.loop),
+                local_addr=('0.0.0.0', self.config.client_port)
+            )
+        else:
+            transport, protocol = await self.loop.create_datagram_endpoint(
+                lambda: UdpRelayReceiverProtocol(False, self.config, self.loop),
+                local_addr=('0.0.0.0', self.config.server_port)
+            )
 
 
-class UdpRelayProtocol(asyncio.DatagramProtocol):
-    def __init__(self):
+class UdpRelayReceiverProtocol(asyncio.DatagramProtocol):
+
+    def __init__(self, is_client, config, loop):
         self.transport = None
+        self.is_client = is_client
+        self.config = config
+        self.loop = loop
 
-    def datagram_received(self, data: Union[bytes, Text], addr: Tuple[str, int]) -> None:
-        super().datagram_received(data, addr)
+    def datagram_received(self, data, addr):
+        if self.is_client:
+            asyncio.wait(asyncio.ensure_future(self._transfer_data(data)), loop=self.loop)
+        else:
+            asyncio.wait(asyncio.ensure_future(self._transfer_data(data)), loop=self.loop)
 
-    def error_received(self, exc: Exception) -> None:
-        super().error_received(exc)
-
-    def connection_made(self, transport: transports.BaseTransport) -> None:
+    def connection_made(self, transport):
         self.transport = transport
 
-    def connection_lost(self, exc: Optional[Exception]) -> None:
-        super().connection_lost(exc)
+    async def _transfer_data(self, data):
+        if self.is_client:
+            sender_transport, sender_potocol = await self.loop.create_datagram_endpoint(
+                lambda: UdpRelaySenderProtocol(data, self.transport, self.is_client, self.config),
+                remote_addr=(self.config.server_host, self.config.server_port)
+            )
+            data = common.encrypt_bytes(data, self.config.password)
+            sender_transport.sendto(data, (self.config.server_host, self.config.server_port))
+        else:
+            data = common.decrypt_bytes(data, self.config.password)
+            frag, dst_host, dst_port, header, data = self._parse_udp_data(data)
+            if frag != 0 or not dst_host:
+                return
+            sender_transport, sender_potocol = await self.loop.create_datagram_endpoint(
+                lambda: UdpRelaySenderProtocol(header, self.transport, self.is_client, self.config),
+                remote_addr=(dst_host, dst_port)
+            )
+            sender_transport.sendto(data)
+
+    def _parse_udp_data(self, data):
+        frag = data[2]
+        if data[3] == 0x01:           # IPv4
+            host = '%d.%d.%d.%d' % (int(data[4]), int(data[5]), int(data[6]), int(data[7]))
+            port = common.get_port_from_bytes(data[8: 10])
+            header = data[:10]
+            data = data[10:]
+        elif data[3] == 0x03:         # domain
+            p = 5 + int(data[4])
+            host = data[5: p]
+            port = common.get_port_from_bytes(data[p: p+2])
+            header = data[:7+int(data[4])]
+            data = data[7+int(data[4]):]
+        else:
+            host = None
+            port = None
+            header = None
+            data = None
+        return frag, host, port, header, data
+
+
+class UdpRelaySenderProtocol(asyncio.DatagramProtocol):
+
+    def __init__(self, header, src_transport, is_client, config):
+        self.src_transport = src_transport
+        self.header = header
+        self.transport = None
+        self.is_client = is_client
+        self.config = config
+
+    def datagram_received(self, data, addr) -> None:
+        if self.is_client:
+            data = common.decrypt_bytes(data, self.config.password)
+        else:
+            data = self.header + data
+            data = common.encrypt_bytes(data, self.config.password)
+        self.src_transport.sendto(data)
+
+    def connection_made(self, transport):
+        self.transport = transport
