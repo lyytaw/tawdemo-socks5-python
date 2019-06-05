@@ -11,17 +11,21 @@ from tcp_relay import TcpRelayHandler
 
 def _parse_args(args):
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('-p', '--port', dest='port', type=int, required=True, help='listening port')
-    arg_parser.add_argument('-H', '--host', dest='host', required=True, help='local host/ip')
-    arg_parser.add_argument('-P', '--password', type=int, dest='password', required=True, help='password')
+    arg_parser.add_argument('-p', '--port', dest='server_port', type=int, required=True, help='本地监听端口')
+    arg_parser.add_argument('-P', '--password', dest='password', required=True, help='密码')
     return arg_parser.parse_args(args)
 
 
 def main():
     config = _parse_args(sys.argv[1:])
     loop = asyncio.get_event_loop()
-    tcp_relay_handler = TcpRelayHandler(config, loop)
-    tcp_relay_handler.start_server()
+    tcp_relay_handler = TcpRelayHandler(False, config, loop)
+
+    loop.run_until_complete(tcp_relay_handler.start())
+    try:
+        loop.run_forever()
+    finally:
+        loop.close()
 
 
 if __name__ == '__main__':
