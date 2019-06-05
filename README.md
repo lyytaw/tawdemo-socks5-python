@@ -15,7 +15,7 @@
 密码必须为整数类型
 
 ```bash
-nohup python server.py -p [本地监听端口] -P [密码] &
+nohup python server.py -H [本地地址] -p [本地监听端口] -P [密码] &
 ```
 
 **客户端**
