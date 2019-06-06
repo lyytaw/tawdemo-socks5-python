@@ -40,6 +40,8 @@ class UdpRelayReceiverProtocol(asyncio.DatagramProtocol):
         self.loop = loop
 
     def datagram_received(self, data, addr):
+        print('receive1:')
+        print(data)
         if self.is_client:
             asyncio.wait(asyncio.ensure_future(self._transfer_data(data)), loop=self.loop)
         else:
@@ -49,6 +51,8 @@ class UdpRelayReceiverProtocol(asyncio.DatagramProtocol):
         self.transport = transport
 
     async def _transfer_data(self, data):
+        print('transfer:')
+        print(data)
         if self.is_client:
             sender_transport, sender_potocol = await self.loop.create_datagram_endpoint(
                 lambda: UdpRelaySenderProtocol(data, self.transport, self.is_client, self.config),
@@ -65,7 +69,7 @@ class UdpRelayReceiverProtocol(asyncio.DatagramProtocol):
                 lambda: UdpRelaySenderProtocol(header, self.transport, self.is_client, self.config),
                 remote_addr=(dst_host, dst_port)
             )
-            sender_transport.sendto(data)
+            sender_transport.sendto(data, (dst_host, dst_port))
 
     def _parse_udp_data(self, data):
         frag = data[2]
@@ -97,7 +101,9 @@ class UdpRelaySenderProtocol(asyncio.DatagramProtocol):
         self.is_client = is_client
         self.config = config
 
-    def datagram_received(self, data, addr) -> None:
+    def datagram_received(self, data, addr):
+        print('receive2:')
+        print(data)
         if self.is_client:
             data = common.decrypt_bytes(data, self.config.password)
         else:

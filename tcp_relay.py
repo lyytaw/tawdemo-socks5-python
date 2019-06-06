@@ -77,6 +77,11 @@ class TcpRelayHandler(object):
 
             # 只支持TCP和UDP
             if data[1] != 0x01 and data[1] != 0x03:
+                pass
+            elif data[1] == 0x03:
+                self._establish_connection_success(writer)
+                return
+            else:
                 self._establish_connection_fail(writer, 0x07)
                 writer.close()
                 return
