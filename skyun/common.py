@@ -4,7 +4,7 @@
 
 import asyncio
 import hashlib
-from constant import *
+from skyun.constant import *
 
 
 async def read_data(reader: asyncio.StreamReader, decrypt: bool, password):
