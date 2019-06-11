@@ -4,16 +4,22 @@
 
 ### 运行环境
 
-类unix系统、python3.7+
+类unix系统、python3.6+
 
 无需安装第三方库
 
 ### 使用方式
 
+**安装**
+
+```bash
+pip install skyun
+```
+
 **服务器**
 
 ```bash
-nohup python server.py -p [本地监听端口] -P [密码] &
+nohup skyserver -p [本地监听端口] -P [密码] &
 ```
 
 **客户端**
@@ -21,7 +27,7 @@ nohup python server.py -p [本地监听端口] -P [密码] &
 密码必须与服务器密码一致
 
 ```bash
-nohup python client.py -lp [本地监听端口] -rp [服务器端口] -rh [服务器地址] -P [密码] &
+nohup skyclient -lp [本地监听端口] -rp [服务器端口] -rh [服务器地址] -P [密码] &
 ```
 
 ### 版本特性
