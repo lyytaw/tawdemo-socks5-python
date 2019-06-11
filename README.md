@@ -12,8 +12,6 @@
 
 **服务器**
 
-密码必须为整数类型
-
 ```bash
 nohup python server.py -p [本地监听端口] -P [密码] &
 ```
