@@ -3,10 +3,11 @@
 # @Author  : cayun
 
 import asyncio
+import hashlib
 from constant import *
 
 
-async def read_data(reader: asyncio.StreamReader, decrypt: bool, password: int):
+async def read_data(reader: asyncio.StreamReader, decrypt: bool, password):
     if decrypt:
         data = await reader.read(BUFF_SIZE)
         if not data:
@@ -18,7 +19,7 @@ async def read_data(reader: asyncio.StreamReader, decrypt: bool, password: int):
         return data
 
 
-def write_data(writer: asyncio.StreamWriter, data: bytes, encrypt: bool, password: int):
+def write_data(writer: asyncio.StreamWriter, data: bytes, encrypt: bool, password):
     if encrypt:
         data = encrypt_bytes(data, password)
         writer.write(data)
@@ -26,7 +27,7 @@ def write_data(writer: asyncio.StreamWriter, data: bytes, encrypt: bool, passwor
         writer.write(data)
 
 
-async def transfer_data_with_encrypt(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, password: int):
+async def transfer_data_with_encrypt(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, password):
     try:
         while True:
             data = await read_data(reader, False, password)
@@ -39,7 +40,7 @@ async def transfer_data_with_encrypt(reader: asyncio.StreamReader, writer: async
         writer.close()
 
 
-async def transfer_data_with_decrypt(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, password: int):
+async def transfer_data_with_decrypt(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, password):
     try:
         while True:
             data = await read_data(reader, True, password)
@@ -52,17 +53,21 @@ async def transfer_data_with_decrypt(reader: asyncio.StreamReader, writer: async
         writer.close()
 
 
-def encrypt_bytes(data: bytes, password: int):
+def encrypt_bytes(data: bytes, password):
+    password1 = int(hashlib.md5(password.encode('utf-8')).hexdigest(), 16) & ((1 << 20) - 1)
+    password2 = int(hashlib.sha1(password.encode('utf-8')).hexdigest(), 16) & ((1 << 20) - 1)
     data = bytearray(data)
     for i in range(len(data)):
-        data[i] = ((data[i] ^ password) + password) & 255
+        data[i] = ((data[i] ^ password1) + password2) & 255
     return bytes(data)
 
 
-def decrypt_bytes(data: bytes, password: int):
+def decrypt_bytes(data: bytes, password):
+    password1 = int(hashlib.md5(password.encode('utf-8')).hexdigest(), 16) & ((1 << 20) - 1)
+    password2 = int(hashlib.sha1(password.encode('utf-8')).hexdigest(), 16) & ((1 << 20) - 1)
     data = bytearray(data)
     for i in range(len(data)):
-        data[i] = ((data[i] - password) ^ password) & 255
+        data[i] = ((data[i] - password2) ^ password1) & 255
     return bytes(data)
 
 

@@ -15,7 +15,7 @@
 密码必须为整数类型
 
 ```bash
-nohup python server.py -H [本地地址] -p [本地监听端口] -P [密码] &
+nohup python server.py -p [本地监听端口] -P [密码] &
 ```
 
 **客户端**
@@ -27,6 +27,8 @@ nohup python client.py -lp [本地监听端口] -rp [服务器端口] -rh [服�
 ```
 
 ### 版本特性
+
+v1.1 支持UDP协议
 
 v1.0 仅支持TCP协议的代理
 
