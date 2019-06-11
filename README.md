@@ -1,10 +1,10 @@
-# tepig-bridge-python
+# skyun
 
 仅可用于正常学术研究以及技术搜索需要
 
 ### 运行环境
 
-类unix系统、python3.6+
+类unix系统、python3.7+
 
 无需安装第三方库
 
