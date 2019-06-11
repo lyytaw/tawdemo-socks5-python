@@ -28,6 +28,7 @@ nohup python client.py -lp [本地监听端口] -rp [服务器端口] -rh [服�
 
 ### 版本特性
 
+v1.1 支持UDP协议
 v1.0 仅支持TCP协议的代理
 
 ### 协议
