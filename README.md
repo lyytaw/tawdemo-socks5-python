@@ -13,13 +13,13 @@
 **安装**
 
 ```bash
-pip install skyun
+pip install tawsocks
 ```
 
 **服务器**
 
 ```bash
-nohup skyserver -p [本地监听端口] -P [密码] &
+nohup tawsocks-server -p [本地监听端口] -P [密码] &
 ```
 
 **客户端**
@@ -27,7 +27,7 @@ nohup skyserver -p [本地监听端口] -P [密码] &
 密码必须与服务器密码一致
 
 ```bash
-nohup skyclient -lp [本地监听端口] -rp [服务器端口] -rh [服务器地址] -P [密码] &
+nohup tawsocks-client -lp [本地监听端口] -rp [服务器端口] -rh [服务器地址] -P [密码] &
 ```
 
 ### 版本特性

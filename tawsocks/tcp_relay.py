@@ -7,7 +7,7 @@
 import sys
 import asyncio
 
-from skyun import common
+from tawsocks import common
 
 
 class TcpRelayHandler(object):

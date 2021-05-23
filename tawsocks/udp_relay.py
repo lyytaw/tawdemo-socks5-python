@@ -7,7 +7,7 @@
 import struct
 import asyncio
 
-from skyun import common
+from tawsocks import common
 
 
 class UdpRelayHandler(object):
