@@ -35,6 +35,8 @@ nohup tawsocks-client -lp [本地监听端口] -rp [服务器端口] -rh [服务
 
 ### 版本特性
 
+v1.2 更换项目名为tawdemo-socks5-python
+
 v1.1 支持UDP协议
 
 v1.0 仅支持TCP协议的代理
