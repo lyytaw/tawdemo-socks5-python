@@ -13,7 +13,10 @@
 **安装**
 
 ```bash
-pip install tawsocks
+git clone https://github.com/lyytaw/tawdemo-socks5-python.git
+cd tawdemo-socks5-python
+python setup.py build 
+python setup.py install
 ```
 
 **服务器**
